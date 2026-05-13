@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Omi BDR: 3-Month LinkedIn Post Calendar</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F7F6F2;
+  --surface: #FFFFFF;
+  --border: #E5E3DC;
+  --text: #1A1917;
+  --muted: #7A7870;
+  --subtle: #B5B3AB;
+  --seb: #1A1917;
+  --drew: #2D5A3D;
+  --karla: #3B2E7A;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: "DM Sans", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
+
+/* TOOLBAR */
+.toolbar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--text); color: #fff;
+  padding: 10px 40px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+}
+.toolbar-left { display: flex; align-items: center; gap: 16px; }
+.toolbar-title { font-size: 13px; font-weight: 600; letter-spacing: -0.01em; }
+.toolbar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: "DM Sans", sans-serif; font-size: 12px; font-weight: 500;
+  padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn:hover { opacity: 0.85; }
+.btn-light { background: rgba(255,255,255,0.12); color: #fff; }
+.btn-white { background: #fff; color: var(--text); }
+.btn-green { background: #2D5A3D; color: #fff; }
+.progress-summary { font-size: 11px; color: rgba(255,255,255,0.5); font-family: "DM Mono", monospace; }
+
+/* FILTER BAR */
+.filter-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 40px;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.filter-label { font-size: 11px; color: var(--muted); font-family: "DM Mono", monospace; text-transform: uppercase; letter-spacing: 0.08em; margin-right: 4px; }
+.filter-btn {
+  font-family: "DM Sans", sans-serif; font-size: 12px; font-weight: 500;
+  padding: 5px 12px; border-radius: 20px; border: 1.5px solid var(--border);
+  background: transparent; color: var(--muted); cursor: pointer; transition: all 0.12s;
+}
+.filter-btn.active-all { background: var(--text); color: #fff; border-color: var(--text); }
+.filter-btn.active-seb { background: var(--seb); color: #fff; border-color: var(--seb); }
+.filter-btn.active-drew { background: var(--drew); color: #fff; border-color: var(--drew); }
+.filter-btn.active-karla { background: var(--karla); color: #fff; border-color: var(--karla); }
+.filter-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+
+/* HEADER */
+.header { background: var(--text); color: #fff; padding: 40px 56px 36px; position: relative; overflow: hidden; }
+.header::before { content: ''; position: absolute; top: -60px; right: -60px; width: 300px; height: 300px; border-radius: 50%; background: rgba(255,255,255,0.03); }
+.header-eyebrow { font-family: "DM Mono", monospace; font-size: 11px; letter-spacing: 0.12em; color: rgba(255,255,255,0.4); text-transform: uppercase; margin-bottom: 14px; }
+.header h1 { font-size: 30px; font-weight: 300; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 6px; }
+.header h1 strong { font-weight: 600; }
+.header-sub { color: rgba(255,255,255,0.5); font-size: 13px; margin-top: 12px; }
+.header-stats { display: flex; gap: 36px; margin-top: 28px; padding-top: 28px; border-top: 1px solid rgba(255,255,255,0.1); flex-wrap: wrap; }
+.stat-num { font-size: 26px; font-weight: 600; line-height: 1; }
+.stat-label { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 4px; font-family: "DM Mono", monospace; text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* LEGEND */
+.legend { display: flex; gap: 16px; padding: 16px 40px; background: var(--surface); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 500; }
+.legend-dot { width: 9px; height: 9px; border-radius: 50%; }
+.legend-role { font-size: 11px; color: var(--muted); font-weight: 400; margin-left: 2px; }
+
+/* MAIN */
+.main { padding: 36px 40px; }
+.month-block { margin-bottom: 52px; }
+.month-header { display: flex; align-items: baseline; gap: 14px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1.5px solid var(--text); }
+.month-label { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
+.month-theme { font-family: "DM Mono", monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.week-block { margin-bottom: 28px; }
+.week-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.week-label { font-family: "DM Mono", monospace; font-size: 10px; color: var(--subtle); text-transform: uppercase; letter-spacing: 0.12em; }
+.week-progress { font-family: "DM Mono", monospace; font-size: 10px; color: var(--subtle); }
+.week-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+
+/* POST CARD */
+.post-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px; position: relative; transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.post-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.07); }
+.post-card.seb { border-top: 3px solid var(--seb); }
+.post-card.drew { border-top: 3px solid var(--drew); }
+.post-card.karla { border-top: 3px solid var(--karla); }
+.post-card.done { opacity: 0.5; }
+.post-card.done .card-hook { text-decoration: line-through; text-decoration-color: rgba(0,0,0,0.25); }
+
+/* CARD HEADER ROW */
+.card-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.card-day-rep { display: flex; flex-direction: column; gap: 2px; }
+.card-day { font-family: "DM Mono", monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--subtle); }
+.card-rep { font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+.card-rep .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.card-rep.seb .dot { background: var(--seb); }
+.card-rep.drew .dot { background: var(--drew); }
+.card-rep.karla .dot { background: var(--karla); }
+.card-rep.seb { color: var(--seb); }
+.card-rep.drew { color: var(--drew); }
+.card-rep.karla { color: var(--karla); }
+
+/* CHECKBOX */
+.check-wrap { flex-shrink: 0; }
+.check-wrap input[type=checkbox] { display: none; }
+.check-box {
+  width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: all 0.15s; background: var(--bg);
+}
+.check-box:hover { border-color: var(--muted); }
+.check-box .check-icon { display: none; font-size: 12px; }
+input[type=checkbox]:checked + .check-box { background: #22C55E; border-color: #22C55E; }
+input[type=checkbox]:checked + .check-box .check-icon { display: block; color: #fff; }
+
+.card-type { font-size: 10px; font-family: "DM Mono", monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 7px; }
+.card-hook { font-size: 12px; font-weight: 500; line-height: 1.45; color: var(--text); margin-bottom: 10px; }
+.card-copy { font-size: 11.5px; color: var(--muted); line-height: 1.55; border-top: 1px solid var(--border); padding-top: 8px; }
+.card-source { margin-top: 7px; font-size: 10px; font-family: "DM Mono", monospace; color: var(--subtle); }
+.card-actions { margin-top: 10px; display: flex; gap: 6px; }
+.copy-btn {
+  flex: 1; font-family: "DM Sans", sans-serif; font-size: 11px; font-weight: 500;
+  padding: 5px 8px; border-radius: 5px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--muted); cursor: pointer; transition: all 0.12s;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+}
+.copy-btn:hover { background: var(--text); color: #fff; border-color: var(--text); }
+.copy-btn.copied { background: #22C55E; color: #fff; border-color: #22C55E; }
+.copy-btn svg { width: 10px; height: 10px; flex-shrink: 0; }
+
+/* HIDDEN CARDS */
+.post-card.hidden { display: none; }
+
+/* MODAL */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  z-index: 500; align-items: center; justify-content: center; padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border-radius: 14px; padding: 28px;
+  max-width: 560px; width: 100%; max-height: 85vh; overflow-y: auto;
+  position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+.modal-close {
+  position: absolute; top: 16px; right: 16px; width: 28px; height: 28px;
+  border-radius: 50%; border: none; background: var(--bg); cursor: pointer;
+  font-size: 16px; display: flex; align-items: center; justify-content: center; color: var(--muted);
+}
+.modal-eyebrow { font-family: "DM Mono", monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 8px; }
+.modal-hook { font-size: 16px; font-weight: 600; line-height: 1.4; margin-bottom: 14px; color: var(--text); }
+.modal-copy-box {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+  padding: 14px; font-size: 13px; color: var(--text); line-height: 1.65;
+  white-space: pre-wrap; margin-bottom: 12px; user-select: all; cursor: text;
+}
+.modal-source { font-size: 11px; font-family: "DM Mono", monospace; color: var(--subtle); margin-bottom: 16px; }
+.modal-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.modal-btn {
+  flex: 1; min-width: 120px; font-family: "DM Sans", sans-serif; font-size: 13px; font-weight: 500;
+  padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; transition: all 0.12s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.modal-btn-copy { background: var(--text); color: #fff; }
+.modal-btn-copy.copied { background: #22C55E; }
+.modal-btn-done { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+
+/* EXPORT MODAL */
+.export-modal { max-width: 480px; }
+.export-option {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; border: 1px solid var(--border); border-radius: 8px;
+  margin-bottom: 8px; background: var(--bg);
+}
+.export-option-label { font-size: 13px; font-weight: 500; color: var(--text); }
+.export-option-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.export-go-btn {
+  font-family: "DM Sans", sans-serif; font-size: 12px; font-weight: 500;
+  padding: 7px 14px; border-radius: 6px; border: none; cursor: pointer;
+  background: var(--text); color: #fff;
+}
+
+/* REP PROGRESS BARS */
+.rep-progress { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 28px; }
+.rep-prog-item { flex: 1; min-width: 140px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+.rep-prog-name { font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+.rep-prog-name.seb { color: var(--seb); }
+.rep-prog-name.drew { color: var(--drew); }
+.rep-prog-name.karla { color: var(--karla); }
+.rep-prog-bar { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 4px; }
+.rep-prog-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
+.rep-prog-fill.seb { background: var(--seb); }
+.rep-prog-fill.drew { background: var(--drew); }
+.rep-prog-fill.karla { background: var(--karla); }
+.rep-prog-count { font-size: 11px; color: var(--muted); font-family: "DM Mono", monospace; }
+
+@media (max-width: 900px) {
+  .header, .main { padding-left: 20px; padding-right: 20px; }
+  .filter-bar, .legend, .toolbar { padding-left: 20px; padding-right: 20px; }
+  .week-grid { grid-template-columns: 1fr 1fr; }
+  .header-stats { gap: 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- STICKY TOOLBAR -->
+<div class="toolbar">
+  <div class="toolbar-left">
+    <span class="toolbar-title">Omi BDR: LinkedIn Post Calendar</span>
+    <span class="progress-summary" id="toolbar-progress">0 / 65 posted</span>
+  </div>
+  <div class="toolbar-right">
+    <button class="btn btn-light" onclick="resetProgress()">Reset progress</button>
+    <button class="btn btn-light" onclick="openExport()">Export / Share</button>
+    <button class="btn btn-white" onclick="window.print()">Print PDF</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <p class="header-eyebrow">Omi BDR Team: Employee Advocacy Program</p>
+  <h1><strong>3-Month LinkedIn</strong><br>Post Calendar</h1>
+  <p class="header-sub">Seb &middot; Drew &middot; Karla &nbsp;&middot;&nbsp; M-F posting &nbsp;&middot;&nbsp; LinkedIn only &nbsp;&middot;&nbsp; US market</p>
+  <div class="header-stats">
+    <div><div class="stat-num">65</div><div class="stat-label">Total posts</div></div>
+    <div><div class="stat-num">~22</div><div class="stat-label">Per rep</div></div>
+    <div><div class="stat-num">13</div><div class="stat-label">Weeks</div></div>
+    <div><div class="stat-num">150+</div><div class="stat-label">Source pieces</div></div>
+  </div>
+</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--seb)"></div> Seb <span class="legend-role">Thought leadership + ROI / business case</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--drew)"></div> Drew <span class="legend-role">Customer stories + brand proof</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--karla)"></div> Karla <span class="legend-role">Use case + ICP-specific pain points</span></div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <span class="filter-label">View</span>
+  <button class="filter-btn active-all" onclick="setFilter('all', this)">All reps</button>
+  <button class="filter-btn" onclick="setFilter('seb', this)">Seb</button>
+  <button class="filter-btn" onclick="setFilter('drew', this)">Drew</button>
+  <button class="filter-btn" onclick="setFilter('karla', this)">Karla</button>
+  <div class="filter-sep"></div>
+  <button class="filter-btn" onclick="setMonthFilter('all', this)" id="mf-all" style="background:var(--text);color:#fff;border-color:var(--text)">All months</button>
+  <button class="filter-btn" onclick="setMonthFilter(1, this)" id="mf-1">Month 1</button>
+  <button class="filter-btn" onclick="setMonthFilter(2, this)" id="mf-2">Month 2</button>
+  <button class="filter-btn" onclick="setMonthFilter(3, this)" id="mf-3">Month 3</button>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="main-content"></div>
+
+<!-- COPY MODAL -->
+<div class="modal-overlay" id="copy-modal" onclick="closeModal(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeCopyModal()">&times;</button>
+    <div class="modal-eyebrow" id="modal-eyebrow"></div>
+    <div class="modal-hook" id="modal-hook"></div>
+    <div class="modal-copy-box" id="modal-copy-box"></div>
+    <div class="modal-source" id="modal-source"></div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-copy" id="modal-copy-btn" onclick="copyFromModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copy post text
+      </button>
+      <button class="modal-btn modal-btn-done" id="modal-done-btn" onclick="markDoneFromModal()">Mark as posted</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="modal-overlay" id="export-modal" onclick="closeExportModal(event)">
+  <div class="modal export-modal">
+    <button class="modal-close" onclick="document.getElementById('export-modal').classList.remove('open')">&times;</button>
+    <div class="modal-eyebrow">Export and share</div>
+    <div class="modal-hook" style="font-size:18px;margin-bottom:18px;">Get this to your team</div>
+
+    <div class="export-option">
+      <div>
+        <div class="export-option-label">Save as PDF</div>
+        <div class="export-option-sub">Full calendar, print-ready. Open in any browser.</div>
+      </div>
+      <button class="export-go-btn" onclick="window.print()">Print / Save PDF</button>
+    </div>
+
+    <div class="export-option">
+      <div>
+        <div class="export-option-label">Download HTML file</div>
+        <div class="export-option-sub">Share this file directly. Works offline, no login needed.</div>
+      </div>
+      <button class="export-go-btn" onclick="downloadHTML()">Download .html</button>
+    </div>
+
+    <div class="export-option">
+      <div>
+        <div class="export-option-label">Copy shareable link</div>
+        <div class="export-option-sub">If hosted on Google Drive or Notion, share the file URL.</div>
+      </div>
+      <button class="export-go-btn" id="copy-link-btn" onclick="copyPageURL()">Copy page URL</button>
+    </div>
+
+    <div style="margin-top:16px; padding:14px; background:var(--bg); border-radius:8px; font-size:12px; color:var(--muted); line-height:1.6;">
+      <strong style="color:var(--text);">Recommended for team sharing:</strong> Download the .html file and upload it to a shared Google Drive folder. Each rep opens it in their browser. Checkboxes save locally per device, so each rep tracks their own progress.
+    </div>
+  </div>
+</div>
+
+<script>
+const POSTS = [
+  { id:'card_0', rep:'seb', day:'Monday', name:'Seb', type:'Thought leadership', hook:'the product IS the story. brands that figured this out stopped losing to competitors with bigger budgets.', copy:'most brands treat product visuals as an afterthought. the ones winning on social and ecommerce treat every image as a revenue decision. the shift happened quietly. the data is loud. +49% conversion when visuals are done right. that\'s not a design stat. that\'s a sales stat.', source:'omi.so homepage + blog', week:1, month:1 },
+  { id:'card_1', rep:'drew', day:'Tuesday', name:'Drew', type:'Customer story: L\'Oréal', hook:'L\'Oréal replaced their global photoshoot workflow. here\'s what they replaced it with.', copy:'when you\'re operating across dozens of international markets, visual inconsistency kills brand equity. L\'Oréal built a new model for content production. one 3D digital twin, infinite outputs, zero studio spend. this is what modern creative operations look like at scale.', source:'omi.so/resources/blog/loreal-scales-content-case-study', week:1, month:1 },
+  { id:'card_2', rep:'karla', day:'Wednesday', name:'Karla', type:'Use case: eCommerce PDP', hook:'if you run ecommerce, your product detail page is your highest-leverage real estate. most brands are leaving money on the table there.', copy:'5 things high-converting PDPs have in common: 1. multiple angles 2. lifestyle context 3. consistent background treatment 4. variant visuals for every SKU 5. content that actually loads fast. most brands can only do 2 of these consistently. there\'s a reason for that. fix incoming.', source:'omi.so/use-cases/ecommerce-pdps', week:1, month:1 },
+  { id:'card_3', rep:'seb', day:'Thursday', name:'Seb', type:'ROI stat post', hook:'brands using 3D digital twins are going to market 8 weeks faster. that\'s not a marketing win. that\'s a revenue win.', copy:'8 weeks of additional selling time per launch. multiply that by how many SKUs you launch per year and you\'re talking millions in accelerated revenue. the brands still waiting on physical samples to start their visual production are playing a different game. full stop.', source:'omi.so homepage stat', week:1, month:1 },
+  { id:'card_4', rep:'drew', day:'Friday', name:'Drew', type:'Customer story: Clarins', hook:'Clarins runs the same visual quality across 12 international markets. no photoshoots. no agency handoffs. one system.', copy:'brand consistency at scale is one of the hardest operational problems in marketing. Clarins solved it by building a single digital twin for each product and generating every market\'s content from that one source. the result: uniform brand communication globally, produced internally, in a fraction of the time.', source:'omi.so/resources/blog/case-study-clarins', week:1, month:1 },
+  { id:'card_5', rep:'karla', day:'Monday', name:'Karla', type:'ICP: social media managers', hook:'if you\'re a social media manager at a product brand, this is the bottleneck nobody talks about.', copy:'you have a posting calendar. you have a strategy. you have the captions written. and then you wait. waiting on the studio, on the agency, on the sample to arrive. the content production pipeline is the silent killer of social strategy. brands that fix this see +38% engagement on average. the creative isn\'t the problem. the supply chain is.', source:'omi.so/use-cases/social-media-ads', week:2, month:1 },
+  { id:'card_6', rep:'seb', day:'Tuesday', name:'Seb', type:'Thought leadership', hook:'AI-generated product images look great until they don\'t look like your product. that\'s the problem most brands are about to run into.', copy:'generative AI can create stunning visuals. but it can\'t guarantee accuracy. a bottle that\'s slightly the wrong shape. a label that\'s off-brand. a color that\'s close but not yours. for consumer brands, that gap is a liability. legally, commercially, brand-wise. the fix isn\'t less AI. it\'s anchoring AI to a pixel-perfect 3D model first.', source:'omi.so/resources/blog/ai-product-imagery-needs-digital-twins', week:2, month:1 },
+  { id:'card_7', rep:'drew', day:'Wednesday', name:'Drew', type:'Customer story: Moët Hennessy', hook:'Moët Hennessy decided traditional product photography wasn\'t good enough anymore. here\'s what they moved to.', copy:'when a luxury house with that kind of brand equity makes a shift in how they produce content, it\'s worth paying attention to. Moët Hennessy entered what they called \"a new era of product photography\". 3D digital twins that are indistinguishable from the real thing, with full creative control and no studio overhead. luxury doesn\'t compromise on quality. this is how you keep both.', source:'omi.so/resources/blog/moet-hennessy-wine-estates', week:2, month:1 },
+  { id:'card_8', rep:'karla', day:'Thursday', name:'Karla', type:'Use case: product launches', hook:'you shouldn\'t need a physical sample to start selling a new product. the brands that figured this out have a permanent head start.', copy:'the old workflow: wait for sample → book studio → shoot → edit → approve → publish. that\'s 6 to 10 weeks minimum. the new workflow: create 3D model from specs → generate all launch visuals → go live day one. brands using this approach save an average of 8 weeks per launch. that\'s 8 weeks of sales their competitors don\'t have.', source:'omi.so/use-cases/product-launches-rebrand', week:2, month:1 },
+  { id:'card_9', rep:'seb', day:'Friday', name:'Seb', type:'Industry: beauty/cosmetics', hook:'beauty is the most visual category in retail. it\'s also the one where most brands are most behind on how they produce content.', copy:'the beauty brands winning right now are not the ones with the biggest photo budgets. they\'re the ones with the most efficient visual pipelines. 2026 trend data is clear. speed, consistency, and personalization at the SKU level are the new table stakes. most brands are still producing content the same way they did in 2018.', source:'omi.so/resources/blog/2026-beauty-cosmetics-visuals-trends-by-jennifer-carlsson', week:2, month:1 },
+  { id:'card_10', rep:'drew', day:'Monday', name:'Drew', type:'Customer story: Misencil', hook:'Misencil cut their visual production costs by 75%. not 10%. not 25%. seventy-five percent.', copy:'that number sounds like a headline but it\'s a real outcome from a real brand. when you replace studio shoots with digital twins, you eliminate: location fees, photographer day rates, prop sourcing, post-production retouching, reshooting for seasonal variants. the cost of a photoshoot doesn\'t go away. it compounds. Misencil found a way out.', source:'omi.so/resources/blog/misencil-case-study', week:3, month:1 },
+  { id:'card_11', rep:'karla', day:'Tuesday', name:'Karla', type:'ICP: CRM/email teams', hook:'your email open rates are fine. your click-through rates aren\'t. the problem is usually the product visual in the email.', copy:'CRM teams spend weeks on copy, segmentation, and send-time optimization. then they use the same three product shots from the last photoshoot. every campaign. every market. every season. on-brand, personalized product visuals for email are one of the most underinvested levers in CRM. the brands that fix this see it in their CTR almost immediately.', source:'omi.so/use-cases/crm-campaigns', week:3, month:1 },
+  { id:'card_12', rep:'seb', day:'Wednesday', name:'Seb', type:'Thought leadership', hook:'the hidden cost in your marketing budget isn\'t media spend. it\'s the visual production you keep re-doing.', copy:'shoot for spring. reshoot for summer. reshoot for the new colorway. reshoot because the market team in Germany wants a different background. reshoot because Q4 needs a holiday version. the average brand reshoots the same product 4 to 6 times a year. most CMOs don\'t see this as a single line item. it is, and it\'s enormous. there\'s a better model.', source:'omi.so/resources/blog/real-cost-product-visuals', week:3, month:1 },
+  { id:'card_13', rep:'drew', day:'Thursday', name:'Drew', type:'Customer story: Perrier', hook:'Perrier Energize ran a social campaign with 3D digital twin visuals and saw measurably higher ad recall. here\'s the breakdown.', copy:'ad recall is one of the hardest metrics to move on social. Perrier tested 3D-generated product visuals against traditional photography in their Perrier Energize campaign and the data came back clearly. higher recall, higher engagement. the visual quality of your ad creative isn\'t just aesthetic. it directly impacts how much people remember your brand.', source:'omi.so/resources/blog/perrier-energize-case-study', week:3, month:1 },
+  { id:'card_14', rep:'karla', day:'Friday', name:'Karla', type:'Use case: seasonal marketing', hook:'Q4 planning in May sounds early. it\'s not. the brands that win peak season start their visual production in spring.', copy:'holiday campaign assets don\'t appear in October. they get approved in October. that means production needs to start in July, which means concepting in May. brands that wait until Q3 to think about Q4 visuals end up rushing, overspending, or launching with off-brand assets. the ones who build seasonal content into their digital twin workflow do it in days, not months.', source:'omi.so/resources/blog/prepare-peak-season-in-spring', week:3, month:1 },
+  { id:'card_15', rep:'seb', day:'Monday', name:'Seb', type:'Thought leadership', hook:'the rebrand is done. the new packaging is approved. and then it takes 6 months for the visuals to catch up. that gap is costing brands more than they realize.', copy:'a rebrand isn\'t complete when the new design is approved. it\'s complete when every market, every channel, every piece of content reflects the new identity. simultaneously. most brands take 3 to 6 months to get there. during that window, the old and new visual identity co-exist publicly. that\'s brand dilution, not brand building. there\'s a way to close that gap to days.', source:'omi.so/resources/blog/how-to-rebrand-without-breaking-your-visual-flow', week:4, month:1 },
+  { id:'card_16', rep:'drew', day:'Tuesday', name:'Drew', type:'Customer story: Peggy Sage', hook:'Peggy Sage went from single packshots to 620+ product visuals. same team. same timeline. totally different output.', copy:'620 visuals. think about what a traditional production pipeline looks like to get there. the studios, the shoot days, the retouching hours. Peggy Sage didn\'t scale their team. they scaled their system. one 3D digital twin per product, then generate every format, angle, and variation the business needs. this is what content operations looks like when it\'s actually built for scale.', source:'omi.so/resources/blog/peggy-sage-case-study', week:4, month:1 },
+  { id:'card_17', rep:'karla', day:'Wednesday', name:'Karla', type:'ICP: brand directors', hook:'brand directors: your team is creative. your production pipeline is not. that gap is the problem.', copy:'great creative direction means nothing if it takes 6 weeks to execute. the most common complaint I hear from brand directors isn\'t a lack of ideas. it\'s a production bottleneck that turns a 2-day concept into a 6-week project. when you eliminate the studio dependency, the whole creative-to-published timeline collapses. your team\'s creativity finally matches your team\'s output.', source:'omi.so/industries/beauty', week:4, month:1 },
+  { id:'card_18', rep:'seb', day:'Thursday', name:'Seb', type:'ROI: budget angle', hook:'if you\'re budgeting for 2026 and still allocating the same line item to photography, you\'re budgeting for a workflow that doesn\'t need to exist anymore.', copy:'photoshoots have two costs: what you pay, and what you give up. the time between concept and published content is a revenue gap. the inability to update visuals quickly is a market responsiveness gap. the cost of reshooting for variants, seasons, and markets adds up fast. brands that rethought their visual production budget in 2024 and 2025 came into 2026 with a structural advantage.', source:'omi.so/resources/blog/reduce-2026-visuals-budget', week:4, month:1 },
+  { id:'card_19', rep:'drew', day:'Friday', name:'Drew', type:'Customer story: Medik8', hook:'Medik8 needed high-performance product visuals without compromising on quality. skincare brands can\'t afford visual shortcuts.', copy:'in skincare and dermo-cosmetics, visual accuracy isn\'t just an aesthetic preference. it\'s a trust signal. consumers are making purchase decisions based on what they see in the image. Medik8 found a way to produce photorealistic product visuals at scale without sacrificing the quality standards that premium skincare brands need to maintain. the results speak for themselves.', source:'omi.so/resources/blog/medik8-case-study', week:4, month:1 },
+  { id:'card_20', rep:'karla', day:'Monday', name:'Karla', type:'ICP: eCommerce managers', hook:'ecommerce managers: the visual production bottleneck is costing you conversion. here are the numbers.', copy:'brands that optimized their PDP visuals saw an average 49% lift in conversion rate. not because they changed their copy. not because they ran a new promotion. because the product image quality made the difference between a scroll and an add-to-cart. your PDP is your highest-traffic salesperson. most brands treat its visual content like an afterthought.', source:'omi.so/use-cases/ecommerce-pdps + homepage stat', week:5, month:2 },
+  { id:'card_21', rep:'seb', day:'Tuesday', name:'Seb', type:'Thought leadership', hook:'1,000+ brands have moved to 3D digital twins for product content. the question isn\'t whether this is the future. it\'s whether you\'re early or late.', copy:'the adoption curve in visual production is moving fast. brands that moved early. L\'Oréal, Clarins, Moët Hennessy. now have a content operations advantage that\'s structural, not tactical. brands moving now are catching up. brands waiting are about to feel the gap. this isn\'t a technology conversation. it\'s a competitive positioning conversation.', source:'omi.so homepage', week:5, month:2 },
+  { id:'card_22', rep:'drew', day:'Wednesday', name:'Drew', type:'Customer story: Dialect Fragrances', hook:'Dialect Fragrances is a DTC brand that needed ecommerce-quality visuals without an ecommerce-sized budget. here\'s how they did it.', copy:'DTC brands face the cruelest version of the visual production problem: you need visuals that compete with the major brands, but you don\'t have their budgets or teams. Dialect Fragrances found a way to produce premium product photography that drove real ecommerce performance. without a studio, without a retouching team, without the overhead. this is what levels the playing field.', source:'omi.so/resources/blog/dialect-fragrances-case-study', week:5, month:2 },
+  { id:'card_23', rep:'karla', day:'Thursday', name:'Karla', type:'Use case: social media ads', hook:'the brands with the best social ad performance aren\'t outspending you. they\'re out-producing you.', copy:'media budget is table stakes. creative variety is the actual differentiator. brands running 10 to 15 creative variants per campaign consistently outperform those running 2–3. even with the same media spend. the problem: producing 15 variants traditionally takes weeks and costs thousands. produce them from a digital twin and it takes hours. the math on creative testing changes completely.', source:'omi.so/use-cases/social-media-ads', week:5, month:2 },
+  { id:'card_24', rep:'seb', day:'Friday', name:'Seb', type:'Industry: beverages', hook:'beverage brands have one of the most visually demanding content calendars in CPG. most of them are still producing that content the hard way.', copy:'seasonal variants. limited editions. new flavors. regional market differences. beverage brands are expected to produce fresh, on-brand visuals constantly across every channel. the brands that build a digital twin infrastructure handle this effortlessly. the ones still scheduling photoshoots are perpetually behind their own content calendar.', source:'omi.so/industries/beverages', week:5, month:2 },
+  { id:'card_25', rep:'drew', day:'Monday', name:'Drew', type:'Customer story: Institut Esthederm', hook:'Institut Esthederm launched a product across every channel simultaneously. from a single 3D model. here\'s what that looks like operationally.', copy:'one 3D digital twin. from that single asset: ecommerce packshots, social content, email visuals, print materials, seasonal variants. all produced before the physical product shipped. Institut Esthederm\'s 360° launch model is what modern product marketing looks like when your visual infrastructure is actually built for the speed the market demands.', source:'omi.so/case-study (Institut Esthederm)', week:6, month:2 },
+  { id:'card_26', rep:'karla', day:'Tuesday', name:'Karla', type:'ICP: CMOs', hook:'CMOs: your visual content strategy and your visual production infrastructure are two different conversations. most teams only have one of them.', copy:'you can have a brilliant content strategy and still fail at execution if your production pipeline can\'t keep up. the CMOs I talk to who\'ve solved this describe the same shift: they stopped thinking about visuals as outputs and started thinking about their digital twin library as infrastructure. strategy doesn\'t bottleneck when the production side moves at the speed of ideas.', source:'omi.so homepage + features', week:6, month:2 },
+  { id:'card_27', rep:'seb', day:'Wednesday', name:'Seb', type:'Thought leadership', hook:'the brands that will dominate visual commerce in the next 3 years are building the same thing right now: a 3D digital twin library of their full product catalog.', copy:'think of it as the visual backbone of your brand. every product, modeled perfectly in 3D. every image, video, and creative asset generated from that foundation. instantly, accurately, on-brand. brands with this infrastructure don\'t scramble for launch content. they don\'t wait on studios. they don\'t reshoot for seasonal campaigns. they just generate. that\'s a different kind of competitive moat.', source:'omi.so/resources/blog/digital-twins-the-new-backbone-of-product-content', week:6, month:2 },
+  { id:'card_28', rep:'drew', day:'Thursday', name:'Drew', type:'Customer story: JOLT', hook:'JOLT is a beverage brand that moved beyond traditional product photography. what they found on the other side was worth sharing.', copy:'traditional photography for beverage brands means coordinating studios, lighting rigs, liquid shots, condensation effects, and seasonal reshoots. JOLT decided there was a better way. their shift to 3D digital twins didn\'t just cut costs. it gave their creative team capabilities they didn\'t have before: any angle, any environment, any variant, generated in hours instead of weeks.', source:'omi.so/resources/blog/jolt', week:6, month:2 },
+  { id:'card_29', rep:'karla', day:'Friday', name:'Karla', type:'Use case: retail and print', hook:'retail display materials and print catalogs are where visual inconsistency hurts the most. and they\'re the hardest to fix once they\'re printed.', copy:'digital is forgiving. you can update a banner or swap a PDP image in minutes. print is permanent. brands that produce retail and print materials from a single digital twin source eliminate the version-control nightmare. one accurate 3D model. every format. every market. every season. no surprises at the press check.', source:'omi.so/use-cases/retail-print', week:6, month:2 },
+  { id:'card_30', rep:'seb', day:'Monday', name:'Seb', type:'Thought leadership', hook:'when anyone on your team can create product visuals, brand governance becomes your most important creative discipline.', copy:'the democratization of visual creation is real. mostly good. but it creates a new problem: off-brand content produced at scale is worse than no content. the brands that win with AI-powered visual creation are the ones who built guardrails first. a pixel-perfect digital twin is the guardrail. everything generated from it is automatically on-brand. that\'s the system.', source:'omi.so/resources/blog/creativity-brand-identity', week:7, month:2 },
+  { id:'card_31', rep:'drew', day:'Tuesday', name:'Drew', type:'Customer story: Nutri&amp;Co', hook:'Nutri&amp;Co has a large SKU catalog and growing visual demand. here\'s how they kept pace without growing their team.', copy:'high-SKU brands face a math problem: the number of visuals the business needs grows faster than the team\'s capacity to produce them. Nutri&Co found the answer in digital twins. model the product once, generate every visual the business needs from that foundation. the production team\'s output scaled. the headcount didn\'t. that\'s the leverage point most brands are missing.', source:'omi.so/resources/blog/nutri-co-case-study', week:7, month:2 },
+  { id:'card_32', rep:'karla', day:'Wednesday', name:'Karla', type:'ICP: creative directors', hook:'creative directors: what would you build if production time wasn\'t the constraint?', copy:'most creative directors I talk to have more ideas than their production pipeline can execute. the concept is fast. the execution is slow. when you remove the studio dependency, the ratio flips. you can produce 10 variations in the time it used to take to get one approved. the creative work gets richer when you\'re not managing logistics. that\'s the shift worth making.', source:'omi.so/features/studio', week:7, month:2 },
+  { id:'card_33', rep:'seb', day:'Thursday', name:'Seb', type:'Industry: CPG', hook:'CPG is the category that should be moving fastest on 3D digital twins. most brands in the space are still figuring out why they\'re behind.', copy:'CPG brands launch new SKUs constantly. they operate across retail, DTC, and ecommerce simultaneously. they market to different audiences in different regions. every one of those vectors demands fresh, accurate, on-brand visual content. the brands that have built a digital twin infrastructure for their full product catalog are the ones hitting every channel on time, every time.', source:'omi.so/industries/cpg', week:7, month:2 },
+  { id:'card_34', rep:'drew', day:'Friday', name:'Drew', type:'Customer story: Mon Shampoing', hook:'Mon Shampoing wanted faster visual production without giving up creative control. most brands assume those two things are in tension. they\'re not.', copy:'speed and quality are often framed as a tradeoff in content production. Mon Shampoing disproved that. by moving their visual workflow to 3D digital twins, they got faster AND got more creative control. not less. the ability to change a background, adjust lighting, or generate a seasonal variant in minutes meant their creative team was making more decisions, not fewer. that\'s not a compromise. that\'s an upgrade.', source:'omi.so/resources/blog/mon-shampoing-case-study', week:7, month:2 },
+  { id:'card_35', rep:'karla', day:'Monday', name:'Karla', type:'Use case: CRM deep dive', hook:'your email list is your highest-value marketing asset. the product visuals in your emails are probably your lowest-quality creative. fix that first.', copy:'personalization in email is table stakes now. but most brands personalize the copy and leave the product images static. the same three shots across every segment, every market, every campaign. on-brand, product-accurate visuals tailored to each CRM segment is the unlock most email programs haven\'t touched yet. the brands doing it are seeing it directly in click-through.', source:'omi.so/use-cases/crm-campaigns + blog', week:8, month:2 },
+  { id:'card_36', rep:'seb', day:'Tuesday', name:'Seb', type:'ROI post', hook:'the packaging development process is one of the last places brands still ship physical samples before they have to. that\'s changing.', copy:'the no-sample era in packaging development is here. brands that used to wait weeks for physical samples to validate new packaging designs now validate them in 3D. photorealically, from every angle, in every retail context. the sample still gets made. but the decision gets made faster, with better information, and the visual assets are ready before the product rolls off the line.', source:'omi.so/resources/blog/packaging-development-no-samples', week:8, month:2 },
+  { id:'card_37', rep:'drew', day:'Wednesday', name:'Drew', type:'Customer story: Poupina', hook:'Poupina wanted to refresh their Instagram content without blowing their budget. what they built instead was a scalable content engine.', copy:'Instagram for a beauty brand is a content treadmill. constant posting, constant freshness, constant pressure to produce. Poupina found a way to get off the treadmill: a digital twin workflow that lets them generate fresh, on-brand content whenever they need it, without booking a shoot. their Instagram didn\'t just look better. it became something their team could actually sustain long-term.', source:'omi.so/resources/blog/poupina-case-study', week:8, month:2 },
+  { id:'card_38', rep:'karla', day:'Thursday', name:'Karla', type:'ICP: VP Marketing', hook:'VP of Marketing: the visual production bottleneck is the single most common reason campaigns launch late. here\'s the fix that actually scales.', copy:'late-launching campaigns almost never trace back to a bad strategy. they trace back to a production pipeline that couldn\'t keep up with the plan. the brands that have eliminated this as a chronic problem all did the same thing: built a digital twin library that their team can generate from independently, without studio scheduling or agency handoffs. it\'s an infrastructure decision that pays off on every campaign forever.', source:'omi.so features + homepage', week:8, month:2 },
+  { id:'card_39', rep:'seb', day:'Friday', name:'Seb', type:'Industry: wine and spirits', hook:'wine and spirits brands have the most complex visual requirements in CPG. vintage variants. regional labels. seasonal releases. most are still managing this with spreadsheets and studio schedules.', copy:'a premium spirits brand can have hundreds of product variants. different regions, different vintages, different editions, different markets. each one needs accurate, beautiful visuals across ecommerce, retail, and marketing. the brands that have built 3D digital twin libraries for their catalog produce all of it from a single, accurate source. the ones still coordinating individual photoshoots are perpetually behind.', source:'omi.so/industries/wine-spirits', week:8, month:2 },
+  { id:'card_40', rep:'drew', day:'Monday', name:'Drew', type:'Customer story: Panier des Sens', hook:'Panier des Sens runs a performance-driven visual strategy. 3D creation is how they produce the volume that strategy requires.', copy:'performance marketing lives and dies on creative variety. Panier des Sens understood that early. they built a visual production workflow that gives their media team the creative assets they need, when they need them. the result is a virtuous cycle: more creative variants, more data, better performance, more justified investment in creative. digital twins are what makes the volume possible.', source:'omi.so/resources/blog/etude-cas-panier-des-sens-omi', week:9, month:3 },
+  { id:'card_41', rep:'karla', day:'Tuesday', name:'Karla', type:'Feature: digital twins', hook:'a 3D digital twin isn\'t a render. it\'s a pixel-perfect replica of your product that you own and control forever. the difference matters.', copy:'a render is a one-time output. a digital twin is an asset. every image, video, and visual you\'ll ever need for that product. generated on demand, always accurate, always on-brand. brand teams that understand this distinction stop thinking about visual production as a project and start thinking about it as infrastructure. that\'s when the ROI conversation changes completely.', source:'omi.so/features/digital-twins', week:9, month:3 },
+  { id:'card_42', rep:'seb', day:'Wednesday', name:'Seb', type:'Thought leadership', hook:'digital twins are already the backbone of product content for over 1,000 brands. the ones that haven\'t made the move yet are about to feel the pressure from the ones that did.', copy:'there\'s a version of this conversation that\'s about technology. and there\'s a version that\'s about market position. the brands I find most interesting to talk to right now are the ones who\'ve realized this is the second conversation. not the first. the ROI is clear. the case studies are there. the question is whether you\'re building the infrastructure now or scrambling to catch up in 18 months.', source:'omi.so homepage + case studies', week:9, month:3 },
+  { id:'card_43', rep:'drew', day:'Thursday', name:'Drew', type:'Customer story: Maison Black Honey', hook:'Maison Black Honey turned scent into a visual. that\'s a harder brief than it sounds. here\'s how they pulled it off.', copy:'fragrance brands face a unique creative challenge: the product\'s essence is invisible. the visual has to do all the work of communicating what the scent feels like. Maison Black Honey used 3D digital twins and generative AI environments to build imagery that doesn\'t just show the product. it communicates the mood, the identity, the world the fragrance lives in. that\'s what visual storytelling at the product level looks like.', source:'omi.so/resources/blog/maison-black-honey', week:9, month:3 },
+  { id:'card_44', rep:'karla', day:'Friday', name:'Karla', type:'Feature: ProductDrop AI', hook:'you can now drop any product into any environment. real photo, AI-generated, or uploaded. and get a photorealistic render in minutes. this is what that looks like in practice.', copy:'ProductDrop AI takes your 3D product model and places it into realistic environments with automatic lighting, shadow, and reflection matching. upload a photo of a real surface. generate an AI environment from a text prompt. browse a library of royalty-free settings. the product always looks like it belongs there. because the physics are calculated, not faked. this is the creative capability that changes what a small team can produce.', source:'omi.so/features/productdrop', week:9, month:3 },
+  { id:'card_45', rep:'seb', day:'Monday', name:'Seb', type:'Thought leadership. Amazon', hook:'Amazon is now a visual search engine. brands still treating it as a text catalog are losing to brands that figured this out.', copy:'the brands winning on Amazon in 2026 are winning on visual quality. better images. more angles. lifestyle context. A+ content that tells a story. the brands behind them are still posting flat packshots from 2021. the performance gap between these two groups is widening every quarter. 3D digital twins are how the winning brands produce at the volume and quality Amazon rewards.', source:'omi.so/resources/blog/3d-visualization-for-amazon-performance', week:10, month:3 },
+  { id:'card_46', rep:'drew', day:'Tuesday', name:'Drew', type:'Customer story: My Variations', hook:'My Variations needed to lower visual production costs without lowering visual quality. the two aren\'t mutually exclusive. here\'s the proof.', copy:'the assumption most brand teams operate under is that lower cost means lower quality. My Variations disproved that. by moving their visual workflow to 3D digital twins, they reduced production costs significantly while improving the consistency and quality of what they published. the economics of content production changed. the brand standards didn\'t. that\'s the outcome worth understanding.', source:'omi.so/resources/blog/myvariations-case-study', week:10, month:3 },
+  { id:'card_47', rep:'karla', day:'Wednesday', name:'Karla', type:'Feature: studio', hook:'6,000+ digital props. flexible lighting. ready-made templates. unlimited scenes. this is the virtual studio your team actually has access to right now.', copy:'the Omi Virtual Studio gives brand teams a professional production environment without the production overhead. build any scene from a library of 6,000+ digital props, set up your lighting exactly how you want it, and save scenes as templates so your team can produce consistent content at scale. no technical skills required. no studio booking required. just create.', source:'omi.so/features/studio', week:10, month:3 },
+  { id:'card_48', rep:'seb', day:'Thursday', name:'Seb', type:'ROI / conviction post', hook:'the visual production conversation has changed. it\'s not about whether 3D is good enough anymore. it\'s about how fast you\'re building the infrastructure.', copy:'two years ago, the conversation was \"can 3D digital twins really replace photography?\" the answer is settled. yes, and the case studies prove it. the conversation now is about speed of adoption. the brands that moved fast have a structural advantage in content operations. the brands moving now are catching up. the window to be early is narrowing. where are you in that cycle?', source:'omi.so case studies + homepage stats', week:10, month:3 },
+  { id:'card_49', rep:'drew', day:'Friday', name:'Drew', type:'Customer story: Endro Cosmétiques', hook:'Endro Cosmétiques built one visual system that works across every channel. most brands have a different system for every channel. here\'s why that\'s the problem.', copy:'fragmented visual production creates fragmented brand identity. ecommerce team uses one set of images. social team uses another. CRM team uses whatever they can find. print team requests new assets from the agency. Endro Cosmétiques solved this by building a single 3D digital twin library and generating all channel outputs from it. one source. every channel. always consistent.', source:'omi.so/resources/blog/cas-client-endro-cosmetiques', week:10, month:3 },
+  { id:'card_50', rep:'karla', day:'Monday', name:'Karla', type:'Feature: workflow', hook:'the best visual production tool in the world is useless if your team can\'t collaborate efficiently inside it. workflow matters as much as output.', copy:'Omi\'s Workflow feature is built for brand teams that need to move fast without losing control. invite your team, manage approvals, maintain brand standards, and keep everyone working from the same digital twin library. the creative output is only as good as the system behind it. brands that build a clean workflow see the speed benefits compound over time. every campaign is faster than the last.', source:'omi.so/features/workflow', week:11, month:3 },
+  { id:'card_51', rep:'seb', day:'Tuesday', name:'Seb', type:'Thought leadership', hook:'the cosmetics industry is entering a visual arms race. the brands that don\'t build content operations infrastructure now will be outgunned by the ones that did.', copy:'the 2026 beauty and cosmetics visual trend data is clear: the market is moving toward more content, more personalization, more formats, and faster production cycles. brands that built digital twin infrastructure are ready for this. brands that didn\'t are about to face a content demand they can\'t meet with their current production model. this isn\'t a future problem. it\'s arriving this year.', source:'omi.so/industries/cosmetics + trend reports', week:11, month:3 },
+  { id:'card_52', rep:'drew', day:'Wednesday', name:'Drew', type:'Customer story: Daan Tech', hook:'Daan Tech makes consumer electronics. here\'s how they produce immersive product visuals at scale for a category where every detail matters.', copy:'electronics consumers are detail-oriented. they zoom in. they look for specs. they want to see every angle. for a consumer electronics brand, visual quality isn\'t a nice-to-have. it\'s what converts a researcher into a buyer. Daan Tech built their visual library on 3D digital twins and found they could produce the quality and volume their ecommerce and retail channels demanded, without a proportional increase in production cost.', source:'omi.so/resources/blog/case-study-daan-tech', week:11, month:3 },
+  { id:'card_53', rep:'karla', day:'Thursday', name:'Karla', type:'Remix. eCommerce conversion', hook:'12 ways to improve ecommerce product image conversion. this list keeps coming up in conversations so here it is.', copy:'1. multiple angles 2. lifestyle context 3. consistent lighting 4. white background packshots for marketplaces 5. SKU-level variant visuals 6. zoom-quality resolution 7. video or 360° for hero products 8. seasonal freshness 9. market-specific localization 10. A+ content sections 11. mobile-optimized composition 12. fast load times. most brands do 3 or 4 of these consistently. the ones doing all 12 have the conversion data to show for it.', source:'omi.so/resources/blog/product-images-best-practices', week:11, month:3 },
+  { id:'card_54', rep:'seb', day:'Friday', name:'Seb', type:'Industry: electronics', hook:'consumer electronics is the category where visual accuracy matters most and where the cost of getting it wrong is highest. 3D digital twins solve both problems.', copy:'for electronics brands, product visuals serve two audiences simultaneously: the consumer who wants to be wowed, and the buyer who wants to verify specs. a 3D digital twin satisfies both. photorealistic quality that stops the scroll. pixel-perfect accuracy that holds up to scrutiny. and the ability to generate every angle, configuration, and context variant your retail and DTC channels need. from a single model.', source:'omi.so/industries/electronics', week:11, month:3 },
+  { id:'card_55', rep:'drew', day:'Monday', name:'Drew', type:'Remix: Misencil, new angle', hook:'I keep coming back to this one because the math is too compelling to ignore. 75% reduction in visual production costs. let\'s do the math on what that actually means.', copy:'if you\'re spending $200k/year on visual production, that\'s $150k back. if you\'re spending $500k, that\'s $375k back. and that\'s before you count the time savings, the speed to market improvement, and the creative flexibility gains. Misencil hit 75%. most brands I talk to would be thrilled with 30 to 40%. the economics here are not marginal they\'re structural.', source:'omi.so/resources/blog/misencil-case-study (remixed angle)', week:12, month:3 },
+  { id:'card_56', rep:'karla', day:'Tuesday', name:'Karla', type:'ICP: operations/production', hook:'production managers: the creative team isn\'t the bottleneck. the pipeline you\'re managing is. here\'s what brands are doing about it.', copy:'I know that\'s uncomfortable to hear. but the most common feedback I get from production teams after they shift to a digital twin workflow is: \"I didn\'t realize how much of my time was coordination, not creation.\" brief the studio. approve the shots. route the retouching. manage the variants. all of that time either disappears or compresses dramatically. what\'s left is actual production work. that\'s what the role is supposed to be.', source:'omi.so features + workflow', week:12, month:3 },
+  { id:'card_57', rep:'seb', day:'Wednesday', name:'Seb', type:'Conviction post', hook:'the companies I find most interesting right now are not the ones asking \"should we invest in 3D digital twins.\" they\'re the ones asking \"how fast can we build the library.\"', copy:'the decision to make has already been made by the brands paying attention. L\'Oréal made it. Clarins made it. Moët Hennessy made it. Perrier made it. the conversation has shifted from \"is this the right direction\" to \"what\'s the fastest path to getting our full catalog in.\" that\'s where I want to be spending my time. with the brands in the second conversation.', source:'omi.so case studies', week:12, month:3 },
+  { id:'card_58', rep:'drew', day:'Thursday', name:'Drew', type:'Remix: Clarins, new angle', hook:'Clarins didn\'t just solve a content production problem. they solved a brand governance problem at global scale.', copy:'when you\'re operating in dozens of markets and every regional team has the ability to generate their own content, brand consistency becomes an existential question. Clarins answered it with a single digital twin library. one source of truth that every market generates from. the creative flexibility is local. the brand standards are global. that\'s the architecture that makes international brand management actually work.', source:'omi.so/resources/blog/case-study-clarins (remixed angle)', week:12, month:3 },
+  { id:'card_59', rep:'karla', day:'Friday', name:'Karla', type:'Remix: ProductDrop / seasonal', hook:'it\'s Q3. if you haven\'t started your Q4 visual production yet, you\'re already behind. here\'s the fastest path to fix that.', copy:'peak season visual production timelines run backwards from go-live, not forward from \"when I have bandwidth.\" if your campaign goes live in November, assets need approval in October, retouching in September, shooting in August. brands that don\'t have a digital twin workflow are already in a time crunch they may not realize yet. the ones that do are generating Q4 variants today. which conversation do you want to be in?', source:'omi.so/use-cases/seasonal-marketing + ProductDrop', week:12, month:3 },
+  { id:'card_60', rep:'seb', day:'Monday', name:'Seb', type:'Reflection / thought leadership', hook:'3 months of talking to brand and marketing leaders about visual production. here\'s what I\'ve learned.', copy:'the brands moving fastest on digital twin infrastructure share one trait: they made a platform decision, not a project decision. they didn\'t commission a 3D shoot. they built a library. there\'s a compounding return to this that takes about 6 months to fully feel. and once you feel it, you don\'t go back. the brands still treating every visual as a one-time project are going to feel the gap before the end of 2026.', source:'synthesis across all omi.so content', week:13, month:3 },
+  { id:'card_61', rep:'drew', day:'Tuesday', name:'Drew', type:'Proof compilation post', hook:'if you want proof that 3D digital twins work for enterprise brands, here\'s 90 days of evidence in one post.', copy:'L\'Oréal: global content at scale. Clarins: consistent across 12 markets. Moët Hennessy: luxury-quality, zero studio. Misencil: 75% cost reduction. Peggy Sage: 620+ visuals from digital twins. Perrier: higher ad recall on social. Nutri&Co: high-SKU velocity without growing the team. 8 weeks faster to market on average. +49% conversion rate lift on PDPs. the data isn\'t anecdotal. it\'s a pattern. and patterns this consistent point to one conclusion.', source:'all customer stories + homepage stats', week:13, month:3 },
+  { id:'card_62', rep:'karla', day:'Wednesday', name:'Karla', type:'Final ICP push', hook:'if any of these describe your situation, this is the conversation worth having right now.', copy:'you\'re spending more than $100k/year on visual production and wondering where it all goes. your campaigns regularly launch late because assets weren\'t ready. your team produces great strategy but the execution never catches up. you\'re managing visual content across multiple markets and it\'s a version-control nightmare. you launched a product and your competitor\'s visuals looked better. any one of these is worth a 30-minute conversation.', source:'synthesized ICP pain points across all omi.so use cases', week:13, month:3 },
+  { id:'card_63', rep:'seb', day:'Thursday', name:'Seb', type:'Final conviction post', hook:'the brands that win the next 3 years in CPG and beauty are being decided right now by infrastructure choices most people in the industry haven\'t made yet.', copy:'content operations is becoming a competitive moat. the brands that built it early. whether that\'s a CRM automation stack, a PIM system, or a 3D digital twin library. compound their advantage over time. every campaign is faster, cheaper, and more consistent than their competitors. it doesn\'t feel dramatic when you\'re building it. it feels decisive in hindsight. the window to be early on visual infrastructure is narrowing fast.', source:'synthesis. omi.so homepage, case studies, blog', week:13, month:3 },
+  { id:'card_64', rep:'drew', day:'Friday', name:'Drew', type:'Final social proof post', hook:'90 days in. the brands that caught my attention the most weren\'t the biggest ones. they were the ones that moved the fastest.', copy:'Misencil isn\'t L\'Oréal. Poupina isn\'t Clarins. JOLT isn\'t Perrier. but they all made the same infrastructure decision and saw the same pattern of results: faster production, lower costs, more creative flexibility, better channel performance. the playbook isn\'t reserved for enterprise brands with enterprise budgets. the brands I find most exciting right now are the ones who realized that early. and moved on it.', source:'customer stories across all sizes', week:13, month:3 },
+];
+
+const MONTH_THEMES = {
+  1: "Credibility: big names, big stats, establish authority",
+  2: "ICP Targeting: speak directly to each buyer persona",
+  3: "Product depth + Conviction: features, proof, and pipeline close"
+};
+
+let currentFilter = 'all';
+let currentMonthFilter = 'all';
+let currentModalId = null;
+
+// Load/save progress from localStorage
+function getProgress() {
+  try { return JSON.parse(localStorage.getItem('omi_bdr_progress') || '{}'); } catch(e) { return {}; }
+}
+function saveProgress(p) {
+  try { localStorage.setItem('omi_bdr_progress', JSON.stringify(p)); } catch(e) {}
+}
+
+function toggleDone(id, el) {
+  const progress = getProgress();
+  progress[id] = el.checked;
+  saveProgress(progress);
+  updateCardState(id, el.checked);
+  updateProgress();
+}
+
+function updateCardState(id, done) {
+  const card = document.querySelector(`.post-card[data-id="${id}"]`);
+  if (card) {
+    card.classList.toggle('done', done);
+    const cb = card.querySelector('input[type=checkbox]');
+    if (cb) cb.checked = done;
+  }
+}
+
+function updateProgress() {
+  const progress = getProgress();
+  const total = POSTS.length;
+  const done = Object.values(progress).filter(Boolean).length;
+  document.getElementById('toolbar-progress').textContent = `${done} / ${total} posted`;
+
+  // Update rep progress bars
+  ['seb','drew','karla'].forEach(rep => {
+    const repPosts = POSTS.filter(p => p.rep === rep);
+    const repDone = repPosts.filter(p => progress[p.id]).length;
+    const pct = Math.round((repDone / repPosts.length) * 100);
+    const fill = document.getElementById(`prog-fill-${rep}`);
+    const count = document.getElementById(`prog-count-${rep}`);
+    if (fill) fill.style.width = pct + '%';
+    if (count) count.textContent = `${repDone} / ${repPosts.length} posted`;
+  });
+
+  // Update week progress labels
+  for (let w = 1; w <= 13; w++) {
+    const weekPosts = POSTS.filter(p => p.week === w);
+    const weekDone = weekPosts.filter(p => progress[p.id]).length;
+    const el = document.getElementById(`week-prog-${w}`);
+    if (el) el.textContent = `${weekDone}/${weekPosts.length} posted`;
+  }
+}
+
+function resetProgress() {
+  if (confirm('Reset all progress? This clears all checkboxes.')) {
+    localStorage.removeItem('omi_bdr_progress');
+    document.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
+    document.querySelectorAll('.post-card').forEach(c => c.classList.remove('done'));
+    updateProgress();
+  }
+}
+
+function setFilter(rep, btn) {
+  currentFilter = rep;
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    if (['all','seb','drew','karla'].some(r => b.textContent.toLowerCase().replace(' ','-') === (r === 'all' ? 'all reps' : r))) {
+      b.className = 'filter-btn';
+    }
+  });
+  btn.className = `filter-btn active-${rep}`;
+  applyFilters();
+}
+
+function setMonthFilter(m, btn) {
+  currentMonthFilter = m;
+  document.querySelectorAll('[id^="mf-"]').forEach(b => {
+    b.style.background = '';
+    b.style.color = '';
+    b.style.borderColor = '';
+  });
+  btn.style.background = '#1A1917';
+  btn.style.color = '#fff';
+  btn.style.borderColor = '#1A1917';
+  applyFilters();
+}
+
+function applyFilters() {
+  document.querySelectorAll('.post-card').forEach(card => {
+    const rep = card.dataset.rep;
+    const month = parseInt(card.dataset.month);
+    const repOk = currentFilter === 'all' || rep === currentFilter;
+    const monthOk = currentMonthFilter === 'all' || month === currentMonthFilter;
+    card.classList.toggle('hidden', !(repOk && monthOk));
+  });
+
+  // Hide/show month blocks and week blocks if all cards hidden
+  document.querySelectorAll('.month-block').forEach(mb => {
+    const visible = mb.querySelectorAll('.post-card:not(.hidden)').length > 0;
+    mb.style.display = visible ? '' : 'none';
+  });
+  document.querySelectorAll('.week-block').forEach(wb => {
+    const visible = wb.querySelectorAll('.post-card:not(.hidden)').length > 0;
+    wb.style.display = visible ? '' : 'none';
+  });
+}
+
+function openCopyModal(id) {
+  const post = POSTS.find(p => p.id === id);
+  if (!post) return;
+  currentModalId = id;
+  document.getElementById('modal-eyebrow').textContent = `${post.name} &middot; ${post.type}`;
+  document.getElementById('modal-hook').textContent = post.hook;
+  document.getElementById('modal-copy-box').textContent = post.hook + '\n\n' + post.copy + '\n\n' + post.source;
+  document.getElementById('modal-source').textContent = 'Source: ' + post.source;
+  const progress = getProgress();
+  const doneBtn = document.getElementById('modal-done-btn');
+  doneBtn.textContent = progress[id] ? 'Unmark as posted' : 'Mark as posted';
+  doneBtn.style.background = progress[id] ? '#F0FDF4' : '';
+  document.getElementById('copy-modal').classList.add('open');
+  document.getElementById('modal-copy-btn').textContent = 'Copy post text';
+  document.getElementById('modal-copy-btn').className = 'modal-btn modal-btn-copy';
+}
+
+function closeCopyModal() {
+  document.getElementById('copy-modal').classList.remove('open');
+  currentModalId = null;
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('copy-modal')) closeCopyModal();
+}
+
+function copyFromModal() {
+  const post = POSTS.find(p => p.id === currentModalId);
+  if (!post) return;
+  const text = post.hook + '\n\n' + post.copy + '\n\n' + post.source;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('modal-copy-btn');
+    btn.className = 'modal-btn modal-btn-copy copied';
+    btn.textContent = 'Copied!';
+    setTimeout(() => {
+      btn.className = 'modal-btn modal-btn-copy';
+      btn.textContent = 'Copy post text';
+    }, 2000);
+  });
+}
+
+function markDoneFromModal() {
+  if (!currentModalId) return;
+  const progress = getProgress();
+  progress[currentModalId] = !progress[currentModalId];
+  saveProgress(progress);
+  updateCardState(currentModalId, progress[currentModalId]);
+  updateProgress();
+  const doneBtn = document.getElementById('modal-done-btn');
+  doneBtn.textContent = progress[currentModalId] ? 'Unmark as posted' : 'Mark as posted';
+  doneBtn.style.background = progress[currentModalId] ? '#F0FDF4' : '';
+}
+
+function copyCardText(id, btn) {
+  const post = POSTS.find(p => p.id === id);
+  if (!post) return;
+  const text = post.hook + '\n\n' + post.copy + '\n\n' + post.source;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy text';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+function openExport() { document.getElementById('export-modal').classList.add('open'); }
+function closeExportModal(e) {
+  if (e.target === document.getElementById('export-modal')) document.getElementById('export-modal').classList.remove('open');
+}
+
+function downloadHTML() {
+  const html = document.documentElement.outerHTML;
+  const blob = new Blob([html], {type: 'text/html'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'omi-bdr-linkedin-calendar.html';
+  a.click();
+}
+
+function copyPageURL() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    const btn = document.getElementById('copy-link-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy page URL', 2000);
+  });
+}
+
+// BUILD THE DOM
+function buildCalendar() {
+  const main = document.getElementById('main-content');
+  
+  // Rep progress bars
+  const repProg = document.createElement('div');
+  repProg.className = 'rep-progress';
+  ['seb','drew','karla'].forEach(rep => {
+    const repPosts = POSTS.filter(p => p.rep === rep);
+    const name = rep.charAt(0).toUpperCase() + rep.slice(1);
+    repProg.innerHTML += `
+      <div class="rep-prog-item">
+        <div class="rep-prog-name ${rep}">${name}</div>
+        <div class="rep-prog-bar"><div class="rep-prog-fill ${rep}" id="prog-fill-${rep}" style="width:0%"></div></div>
+        <div class="rep-prog-count" id="prog-count-${rep}">0 / ${repPosts.length} posted</div>
+      </div>`;
+  });
+  main.appendChild(repProg);
+
+  const months = [1,2,3];
+  months.forEach(m => {
+    const mb = document.createElement('div');
+    mb.className = 'month-block';
+    mb.innerHTML = `<div class="month-header"><span class="month-label">Month ${m}</span><span class="month-theme">${MONTH_THEMES[m]}</span></div>`;
+
+    const weeks = [...new Set(POSTS.filter(p => p.month === m).map(p => p.week))];
+    weeks.forEach(w => {
+      const wb = document.createElement('div');
+      wb.className = 'week-block';
+      wb.innerHTML = `<div class="week-header"><div class="week-label">Week ${w}</div><div class="week-progress" id="week-prog-${w}"></div></div><div class="week-grid" id="week-grid-${w}"></div>`;
+      mb.appendChild(wb);
+
+      const grid = wb.querySelector(`#week-grid-${w}`);
+      POSTS.filter(p => p.week === w).forEach(post => {
+        const card = document.createElement('div');
+        card.className = `post-card ${post.rep}`;
+        card.dataset.id = post.id;
+        card.dataset.rep = post.rep;
+        card.dataset.month = post.month;
+        card.innerHTML = `
+          <div class="card-header-row">
+            <div class="card-day-rep">
+              <div class="card-day">${post.day}</div>
+              <div class="card-rep ${post.rep}"><span class="dot"></span>${post.name}</div>
+            </div>
+            <div class="check-wrap">
+              <label>
+                <input type="checkbox" onchange="toggleDone('${post.id}', this)">
+                <div class="check-box"><span class="check-icon">&#10003;</span></div>
+              </label>
+            </div>
+          </div>
+          <div class="card-type">${post.type}</div>
+          <div class="card-hook">${post.hook}</div>
+          <div class="card-copy">${post.copy}</div>
+          <div class="card-source">Source: ${post.source}</div>
+          <div class="card-actions">
+            <button class="copy-btn" onclick="copyCardText('${post.id}', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              Copy text
+            </button>
+            <button class="copy-btn" onclick="openCopyModal('${post.id}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              Preview
+            </button>
+          </div>`;
+        grid.appendChild(card);
+      });
+    });
+    main.appendChild(mb);
+  });
+
+  // Restore progress
+  const progress = getProgress();
+  Object.entries(progress).forEach(([id, done]) => {
+    if (done) updateCardState(id, true);
+  });
+  updateProgress();
+}
+
+buildCalendar();
+</script>
+
+<style>
+@media print {
+  .toolbar, .filter-bar, .card-actions, .check-wrap, .modal-overlay { display: none !important; }
+  .post-card { break-inside: avoid; page-break-inside: avoid; }
+  .post-card:hover { transform: none; box-shadow: none; }
+  .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .post-card.hidden { display: block !important; }
+}
+</style>
+
+</body>
+</html>
